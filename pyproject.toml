@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "prettybib"
+version = "0.1.0"
+description = "Opinionated Bibtex formatting, linting and more"
+authors = ["Delano Flipse <delanoflipse@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+bibtexparser = {version = "^2.0.0b7", allow-prereleases = true}
+requests = "^2.32.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+prettybib = "prettybib.prettybib:run"
