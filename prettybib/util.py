@@ -1,7 +1,8 @@
 import bibtexparser.middlewares
-import requests
 import bibtexparser
 from bibtexparser.model import Entry, Field
+
+from prettybib.log import log_error, log_severe, log_success
 
 
 def read_file(filename):
@@ -25,7 +26,7 @@ def load_library(contents: str) -> bibtexparser.Library:
     library = bibtexparser.parse_string(contents)
 
     if len(library.failed_blocks) > 0:
-        print("Failed blocks:")
+        log_error("Failed blocks:")
         for block in library.failed_blocks:
             print(block)
             print(block.error)
@@ -49,35 +50,14 @@ def write_entries_to_file(entries, filename):
     bibtex_format.block_separator = '\n\n'
     bib_str = bibtexparser.write_string(
         new_library, bibtex_format=bibtex_format,
-        # unparse_stack=[
-        #     bibtexparser.middlewares.MonthIntMiddleware()],
         prepend_middleware=[
             bibtexparser.middlewares.MonthIntMiddleware()]
     )
 
     with open(filename, "w", encoding='utf8') as file:
         file.write(bib_str)
-    print(f"Output file '{filename}' created successfully.")
 
-
-def get_doi_from_title(title):
-    request_url = f"https://api.crossref.org/works?query.title={title}"
-    headers = {
-        "Accept": "application/json; charset=utf-8"
-    }
-    response = requests.get(request_url, headers=headers)
-    if response.status_code != 200:
-        print(f"Failed to get metadata from title: {title}")
-        return None
-
-    data = response.json()
-    if 'message' in data and 'items' in data['message'] and len(data['message']['items']) > 0:
-        found_title = data['message']['items'][0].get('title', [])[0]
-        print(f"Found DOI, for title: {found_title}")
-        return data['message']['items'][0].get('DOI', None)
-    else:
-        print(f"No DOI found for title: {title}")
-        return None
+    log_success(f"Output file '{filename}' created successfully.")
 
 
 def coalesce(*args):
@@ -168,8 +148,8 @@ def merge_fields(field: Field, doi_field: Field) -> Field:
 def merge_entries(entry: Entry, doi_entry: Entry) -> Entry:
     entry_type = coalesce(doi_entry.entry_type, entry.entry_type)
     if doi_entry.entry_type != entry.entry_type:
-        print(
-            f"!!! Entry type differ: '{entry.entry_type}' -> '{doi_entry.entry_type}', using '{entry_type}'")
+        log_severe(
+            f"Entry type differ: '{entry.entry_type}' -> '{doi_entry.entry_type}', using '{entry_type}'")
     entry_key = entry.key
 
     fields: list[Field] = []

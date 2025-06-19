@@ -3,7 +3,20 @@ import time
 from bibtexparser import parse_string
 import requests
 
+from prettybib.log import log_success
 from prettybib.util import str_equal_ignore_case
+
+
+def resolve(entry, resolvers) -> dict:
+    """
+    Resolve a DOI to a BibTeX entry using the available resolvers.
+    """
+    for resolver in resolvers:
+        resolved_entry = resolver(entry)
+        if resolved_entry is not None:
+            log_success(f"Resolved using {resolver.__name__}")
+            return resolved_entry
+    return None
 
 
 def resolve_from_doi(entry):
