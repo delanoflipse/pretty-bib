@@ -4,20 +4,6 @@ import bibtexparser
 from bibtexparser.model import Entry, Field
 
 
-def get_entry_from_doi(doi):
-    try:
-        request_url = f"https://doi.org/{doi}"
-        headers = {
-            "Accept": "application/x-bibtex; charset=utf-8"
-        }
-        response = requests.get(request_url, headers=headers)
-        temp_lib = bibtexparser.parse_string(response.text)
-        return temp_lib.entries[0]
-    except Exception as e:
-        print(f"Failed to get entry from DOI: {doi}")
-        return None
-
-
 def read_file(filename):
     with open(filename, "r", encoding='utf8') as file:
         return file.read()
@@ -28,14 +14,21 @@ def print_library(library):
         print(entry)
 
 
-def load_library(filename):
-    contents = read_file(filename)
+def str_equal_ignore_case(str1: str, str2: str) -> bool:
+    """
+    Compare two strings for equality, ignoring case.
+    """
+    return str1.lower() == str2.lower()
+
+
+def load_library(contents: str) -> bibtexparser.Library:
     library = bibtexparser.parse_string(contents)
 
     if len(library.failed_blocks) > 0:
         print("Failed blocks:")
         for block in library.failed_blocks:
             print(block)
+            print(block.error)
         exit()
 
     return library
@@ -175,8 +168,8 @@ def merge_fields(field: Field, doi_field: Field) -> Field:
 def merge_entries(entry: Entry, doi_entry: Entry) -> Entry:
     entry_type = coalesce(doi_entry.entry_type, entry.entry_type)
     if doi_entry.entry_type != entry.entry_type:
-        print(f"!!! Entry type differ: '{
-              entry.entry_type}' -> '{doi_entry.entry_type}', using '{entry_type}'")
+        print(
+            f"!!! Entry type differ: '{entry.entry_type}' -> '{doi_entry.entry_type}', using '{entry_type}'")
     entry_key = entry.key
 
     fields: list[Field] = []

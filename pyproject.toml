@@ -16,4 +16,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-prettybib = "prettybib.prettybib:run"
+prettybib = "prettybib.main:run"
